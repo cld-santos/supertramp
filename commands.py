@@ -66,16 +66,41 @@ class ShortestPath(Command):
         return shortest_path
 
 
-class PathsByDistance(Command):
-    def __init__(self):
-        super().__init__('^paths\sof\smaximum\sdistance\s(?P<parameter>[0-9]{1,9})$')
+class CommandWithWeight(Command):
+    def match(self, command):
+        _match = re.match(self.pattern, command)
+
+        if not _match:
+            return False
+
+        self.from_node = self.graph[_match.group('from_node')]
+        self.to_node = self.graph[_match.group('to_node')]
+        self.weight = int(_match.group('weight'))
+        return True
 
 
-class PathsOfExactlyStops(Command):
-    def __init__(self):
-        super().__init__('^paths\sof\sexactly\s(?P<parameter>[0-9]{1,9})\sstops$')
+class PathsByDistance(CommandWithWeight):
+    def __init__(self, graph):
+        self.graph = graph
+        super().__init__('^paths\sof\smaximum\sdistance\s(?P<weight>[0-9]{1,9})\sbetween\s(?P<from_node>[A-Z])\sand\s(?P<to_node>[A-Z])')
+
+    def _run(self):
+        return find_path_less_than_distance(self.from_node, self.to_node, self.weight)
 
 
-class PathsByStops(Command):
-    def __init__(self):
-        super().__init__('^paths\sof\s(?P<parameter>[0-9]{1,9})\sstops$')
+class PathsOfExactlyStops(CommandWithWeight):
+    def __init__(self, graph):
+        self.graph = graph
+        super().__init__('^paths\sfrom\s(?P<from_node>[A-Z])\sto\s(?P<to_node>[A-Z])\sof\sexactly\s(?P<weight>[0-9]{1,9})\sstops$')
+
+    def _run(self):
+        return find_path_exactly_stops(self.from_node, self.to_node, self.weight)
+
+
+class PathsByStops(CommandWithWeight):
+    def __init__(self, graph):
+        self.graph = graph
+        super().__init__('^paths\sfrom\s(?P<from_node>[A-Z])\sto\s(?P<to_node>[A-Z])\sof\s(?P<weight>[0-9]{1,9})\sstops$')
+
+    def _run(self):
+        return find_path_maximum_stops(self.from_node, self.to_node, self.weight)
