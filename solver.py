@@ -31,6 +31,12 @@ class Node():
     def connect(self, node, distance):
         self.edges.append(Edge(self, node, weight=distance))
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return "Node({0})".format(str(self.id)) + ("{" + ", ".join([str(node.to_node.id) for node in self.edges]) + "}" if self.edges else "")
+
 
 def find_path(from_node, to_node):
     for edge in from_node.edges:
