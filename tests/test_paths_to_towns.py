@@ -68,7 +68,7 @@ def test_get_all_paths_from():
         print(_path, path.distance, path.stops)
 
 
-def test_get_all_paths_by_stops():
+def test_get_all_paths_of_exactly_number_of_stops():
     node_a = Node('A')
     node_b = Node('B')
     node_c = Node('C')
