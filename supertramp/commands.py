@@ -1,12 +1,10 @@
 import re 
 from .solver import (
     Node,
-    find_path,
-    find_paths,
-    find_all_paths,
-    find_path_exactly_stops,
-    find_path_maximum_stops,
-    find_path_less_than_distance,
+    SolveAllPaths,
+    SolverPathByStop,
+    SolverPathByMaxStops,
+    SolverPathByDistance,
 )
 
 
@@ -70,7 +68,8 @@ class PathDistance(Command):
     def _run(self):
         path_params = self.parameter.split('-')
         try:
-            return find_paths([self.graph[path] for path in path_params])
+            solve_all_paths = SolveAllPaths()
+            return solve_all_paths.distance_from([self.graph[path] for path in path_params])
         except Exception as e:
             return str(e)
 
@@ -82,13 +81,14 @@ class ShortestPath(Command):
 
     def _run(self):
         path = self.parameter.split('-')
-        paths = find_all_paths(self.graph[path[0]], self.graph[path[1]])
+        solve_all_paths = SolveAllPaths()
+        paths = solve_all_paths.solve_path_between(self.graph[path[0]], self.graph[path[1]])
         shortest_path = paths[0]
         for path in paths:
-            if path.distance < shortest_path.distance:
+            if path.get_distance() < shortest_path.get_distance():
                 shortest_path = path
 
-        return shortest_path.distance
+        return shortest_path.get_distance()
 
 
 class CommandWithWeight(Command):
@@ -110,7 +110,8 @@ class PathsByDistance(CommandWithWeight):
         super().__init__('^paths\sof\smaximum\sdistance\s(?P<weight>[0-9]{1,9})\sbetween\s(?P<from_node>[A-Z])\sand\s(?P<to_node>[A-Z])')
 
     def _run(self):
-        paths = find_path_less_than_distance(self.from_node, self.to_node, self.weight)
+        solver_path_by_distance = SolverPathByDistance(self.weight)
+        paths = solver_path_by_distance.solve_path_between(self.from_node, self.to_node)
         return len(paths)
 
 
@@ -120,7 +121,8 @@ class PathsOfExactlyStops(CommandWithWeight):
         super().__init__('^paths\sfrom\s(?P<from_node>[A-Z])\sto\s(?P<to_node>[A-Z])\sof\sexactly\s(?P<weight>[0-9]{1,9})\sstops$')
 
     def _run(self):
-        paths = find_path_exactly_stops(self.from_node, self.to_node, self.weight)
+        solver_path_by_stop = SolverPathByStop(self.weight)
+        paths = solver_path_by_stop.solve_path_between(self.from_node, self.to_node)
         return len(paths)
 
 
@@ -130,5 +132,6 @@ class PathsByStops(CommandWithWeight):
         super().__init__('^paths\sfrom\s(?P<from_node>[A-Z])\sto\s(?P<to_node>[A-Z])\sof\s(?P<weight>[0-9]{1,9})\sstops$')
 
     def _run(self):
-        paths = find_path_maximum_stops(self.from_node, self.to_node, self.weight)
+        solver_path_by_max_stops = SolverPathByMaxStops(self.weight)
+        paths = solver_path_by_max_stops.solve_path_between(self.from_node, self.to_node,)
         return len(paths)
