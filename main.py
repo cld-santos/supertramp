@@ -35,16 +35,30 @@ def print_error(e):
 
 
 if __name__ == '__main__':
-    creator = CreateGraph()
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Solve paths in a graph.')
+    parser.add_argument('-e', '--edges', nargs='+', help='edges to create the graph')
+
     graph = None
-    while graph is None:
-        print('Type the edges of your graph (AB5 BC4 CD8 DC8 DE6 AD5 CE2 EB3 AE7):')
-        graph_param = input()
-        try:
-            graph = creator.run(graph_param)
-        except Exception as e:
-            print_error(e)
-            graph = None
+    args = parser.parse_args()
+    print(args.edges)
+    if args.edges:
+        edges = [edge.replace(',', '').strip() for edge in args.edges]
+        creator = CreateGraph()
+        graph = creator.run(" ".join(edges))
+    else:
+        creator = CreateGraph()
+        while graph is None:
+            print('Type the edges of your graph (AB5 BC4 CD8 DC8 DE6 AD5 CE2 EB3 AE7):')
+            graph_param = input()
+            try:
+                graph = creator.run(graph_param)
+            except Exception as e:
+                print_error(e)
+                graph = None
+
 
     if graph:
         print('# Info: Graph built.')
