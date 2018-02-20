@@ -31,12 +31,18 @@ class Node():
     def connect(self, node, distance):
         self.edges.append(Edge(self, node, weight=distance))
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return "Node({0})".format(str(self.id)) + ("{" + ", ".join([str(node.to_node.id) for node in self.edges]) + "}" if self.edges else "")
+
 
 def find_path(from_node, to_node):
     for edge in from_node.edges:
         if edge.to_node.id == to_node.id:
             return edge.weight
-    raise Exception("Path not found.")
+    raise Exception("NO SUCH ROUTE")
 
 
 def find_paths(nodes):
@@ -66,15 +72,13 @@ def find_all_paths(from_node, to_node, visited={}, path=None):
             _aux.parent = _path
             amount_paths.append(_aux)
             continue
-
-        visited[key] = []
+        visited[key] = _path
 
         if edge.to_node.id == to_node.id:
             amount_paths.append(_path)
             continue
 
         amount_paths.extend(find_all_paths(edge.to_node, to_node, visited, path=_path))
-        visited[key] = _path
 
     return amount_paths
 
@@ -92,10 +96,12 @@ def find_path_exactly_stops(from_node, to_node, number_of_stops, path=None):
             distance=path.distance+edge.weight if path else edge.weight,
             stops=path.stops+1 if path else 1)
 
+        if _path.stops > number_of_stops:
+            continue 
+
         if edge.to_node.id == to_node.id:
             if _path.stops == number_of_stops:
                 amount_paths.append(_path)
-            continue
 
         amount_paths.extend(find_path_exactly_stops(edge.to_node, to_node, number_of_stops, path=_path))
 

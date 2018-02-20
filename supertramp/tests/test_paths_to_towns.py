@@ -61,14 +61,14 @@ def test_get_all_paths_from():
     node_e.connect(node_b, distance=3) # EB3
     node_a.connect(node_e, distance=7) # AE7
     
-    paths = find_all_paths(node_c, node_c)
-    assert len(paths) == 3
+    paths = find_all_paths(node_b, node_b)
+    assert len(paths) == 1
     for path in paths:
         _path = path.get_path()
         print(_path, path.distance, path.stops)
 
 
-def test_get_all_paths_by_stops():
+def test_get_all_paths_of_exactly_number_of_stops():
     node_a = Node('A')
     node_b = Node('B')
     node_c = Node('C')
@@ -84,8 +84,8 @@ def test_get_all_paths_by_stops():
     node_e.connect(node_b, distance=3) # EB3
     node_a.connect(node_e, distance=7) # AE7
     
-    paths = find_path_exactly_stops(node_c, node_c, 4)
-    assert len(paths) == 1
+    paths = find_path_exactly_stops(node_b, node_b, 4)
+    assert len(paths) ==1
     for path in paths:
         _path = path.get_path()
         print(_path, path.distance, path.stops)
