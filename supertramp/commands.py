@@ -1,6 +1,7 @@
 import re 
 from .solver import (
     Node,
+    SolveAllPaths,
     find_path,
     find_paths,
     find_all_paths,
@@ -70,7 +71,8 @@ class PathDistance(Command):
     def _run(self):
         path_params = self.parameter.split('-')
         try:
-            return find_paths([self.graph[path] for path in path_params])
+            solve_all_paths = SolveAllPaths()
+            return solve_all_paths.distance_from([self.graph[path] for path in path_params])
         except Exception as e:
             return str(e)
 
@@ -82,7 +84,8 @@ class ShortestPath(Command):
 
     def _run(self):
         path = self.parameter.split('-')
-        paths = find_all_paths(self.graph[path[0]], self.graph[path[1]])
+        solve_all_paths = SolveAllPaths()
+        paths = solve_all_paths.solve_path_between(self.graph[path[0]], self.graph[path[1]])
         shortest_path = paths[0]
         for path in paths:
             if path.distance < shortest_path.distance:

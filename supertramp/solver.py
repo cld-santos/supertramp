@@ -1,6 +1,5 @@
 from copy import deepcopy 
 
-
 class Path():
     def __init__(self, node, parent=None, distance=0, stops=0):
         self.node = node
@@ -38,49 +37,63 @@ class Node():
         return "Node({0})".format(str(self.id)) + ("{" + ", ".join([str(node.to_node.id) for node in self.edges]) + "}" if self.edges else "")
 
 
-def find_path(from_node, to_node):
-    for edge in from_node.edges:
-        if edge.to_node.id == to_node.id:
-            return edge.weight
-    raise Exception("NO SUCH ROUTE")
+class SolverPath():
+
+    def distance_between(self, from_node, to_node):
+        for edge in from_node.edges:
+            if edge.to_node.id == to_node.id:
+                return edge.weight
+        raise Exception("NO SUCH ROUTE")
+
+    def distance_from(self, nodes):
+        total_distance = 0
+
+        for idx in range(len(nodes)-1):
+            total_distance += self.distance_between(nodes[idx], nodes[idx+1])
+        return total_distance
+
+    def solve_path_between(self, from_node, to_node, path=None):
+        amount_paths = []
+
+        for edge in from_node.edges:
+            if not path:
+                path = Path(from_node)
+
+            _path = Path(
+                edge.to_node,
+                parent=path,
+                distance=path.distance+edge.weight if path else edge.weight,
+                stops=path.stops+1 if path else 1)
+
+            checked_path = self._check(_path, to_node)
+            if checked_path:
+                amount_paths.append(checked_path)
+                continue 
+
+            amount_paths.extend(find_all_paths(edge.to_node, to_node, path=_path))
+
+        return amount_paths
+
+    def _check(self, path, to_node):
+        raise NotImplementedError()
 
 
-def find_paths(nodes):
-    total_distance = 0
+class SolveAllPaths(SolverPath):
+    def __init__(self):
+        self.visited = {}
 
-    for idx in range(len(nodes)-1):
-        total_distance += find_path(nodes[idx], nodes[idx+1])
-    return total_distance
+    def _check(self, path, to_node):
+        key = '{0}-{1}'.format(path.parent.node.id, path.node.id)
+        checked_path = None
+        if self.visited.get(key, None):
+            checked_path = deepcopy(self.visited[key])
+            checked_path.parent = path
+        self.visited[key] = path
 
+        if path.node.id == to_node.id:
+            checked_path = path
 
-def find_all_paths(from_node, to_node, visited={}, path=None):
-    amount_paths = []
-
-    for edge in from_node.edges:
-        if not path:
-            path = Path(from_node)
-
-        _path = Path(
-            edge.to_node,
-            parent=path,
-            distance=path.distance+edge.weight if path else edge.weight,
-            stops=path.stops+1 if path else 1)
-
-        key = '{0}-{1}'.format(edge.from_node.id, edge.to_node.id)
-        if visited.get(key, None):
-            _aux = deepcopy(visited[key])
-            _aux.parent = _path
-            amount_paths.append(_aux)
-            continue
-        visited[key] = _path
-
-        if edge.to_node.id == to_node.id:
-            amount_paths.append(_path)
-            continue
-
-        amount_paths.extend(find_all_paths(edge.to_node, to_node, visited, path=_path))
-
-    return amount_paths
+        return checked_path
 
 
 def find_path_exactly_stops(from_node, to_node, number_of_stops, path=None):
