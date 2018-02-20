@@ -2,9 +2,9 @@ import pytest
 from ..solver import (
     Node,
     SolveAllPaths,
-    find_path_exactly_stops,
-    find_path_maximum_stops,
-    find_path_less_than_distance,
+    SolverPathByStop,
+    SolverPathByMaxStops,
+    SolverPathByDistance,
 )
 
 
@@ -87,7 +87,8 @@ def test_get_all_paths_of_exactly_number_of_stops():
     node_e.connect(node_b, distance=3) # EB3
     node_a.connect(node_e, distance=7) # AE7
     
-    paths = find_path_exactly_stops(node_b, node_b, 4)
+    solver_path_by_stop = SolverPathByStop(4)
+    paths = solver_path_by_stop.solve_path_between(node_b, node_b)
     assert len(paths) == 1
     for path in paths:
         _path = path.get_path()
@@ -109,8 +110,9 @@ def test_get_all_paths_at_least_stops():
     node_c.connect(node_e, distance=2) # CE2
     node_e.connect(node_b, distance=3) # EB3
     node_a.connect(node_e, distance=7) # AE7
-    
-    paths = find_path_maximum_stops(node_c, node_c, 3)
+
+    solver_path_by_max_stops = SolverPathByMaxStops(3)
+    paths = solver_path_by_max_stops.solve_path_between(node_c, node_c)
     assert len(paths) == 2
     for path in paths:
         _path = path.get_path()
@@ -132,8 +134,8 @@ def test_get_all_paths_max_distance():
     node_c.connect(node_e, distance=2) # CE2
     node_e.connect(node_b, distance=3) # EB3
     node_a.connect(node_e, distance=7) # AE7
-    
-    paths = find_path_less_than_distance(node_c, node_c, 30)
+    solver_path_by_distance = SolverPathByDistance(30)
+    paths = solver_path_by_distance.solve_path_between(node_c, node_c)
     assert len(paths) == 7
     for path in paths:
         _path = path.get_path()

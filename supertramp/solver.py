@@ -1,6 +1,10 @@
 from copy import deepcopy 
 
 
+class WeightBeyondThanRequiredException(Exception):
+    pass
+
+
 class Path():
     def __init__(self, node, parent=None, distance=0, stops=0):
         self.node = node
@@ -91,9 +95,12 @@ class SolverPath():
                 distance=edge.weight,
                 stops=path.stops+1 if path else 1)
 
-            checked_path = self._check(_path, to_node)
-            if checked_path:
-                amount_paths.append(checked_path)
+            result = self._check(_path, to_node)
+
+            if result and result.get('path', None):
+                amount_paths.append(result['path'])
+
+            if result and result.get('continue', None):
                 continue 
 
             amount_paths.extend(self.solve_path_between(edge.to_node, to_node, path=_path))
@@ -114,80 +121,53 @@ class SolveAllPaths(SolverPath):
         if self.visited.get(key, None):
             checked_path = deepcopy(self.visited[key].next if self.visited[key].next else self.visited[key])
             checked_path.parent = path
-            return checked_path.get_leaf()
+            leaf = checked_path.get_leaf()
+            return {'path': leaf, 'continue': True}
+
         self.visited[key] = path
 
         if path.node.id == to_node.id:
             path.update_next()
             checked_path = path
 
-        return checked_path
+        return {'path': checked_path, 'continue': checked_path is not None}
 
 
-def find_path_exactly_stops(from_node, to_node, number_of_stops, path=None):
-    amount_paths = []
+class SolverPathByStop(SolverPath):
 
-    for edge in from_node.edges:
-        if not path:
-            path = Path(from_node)
+    def __init__(self, number_of_stops):
+        self.number_of_stops = number_of_stops
 
-        _path = Path(
-            edge.to_node,
-            parent=path,
-            distance=path.distance+edge.weight if path else edge.weight,
-            stops=path.stops+1 if path else 1)
+    def _check(self, path, to_node):
+        if path.stops > self.number_of_stops:
+            return {'continue': True}
 
-        if _path.stops > number_of_stops:
-            continue 
-
-        if edge.to_node.id == to_node.id:
-            if _path.stops == number_of_stops:
-                amount_paths.append(_path)
-
-        amount_paths.extend(find_path_exactly_stops(edge.to_node, to_node, number_of_stops, path=_path))
-
-    return amount_paths
+        if path.node.id == to_node.id:
+            if path.stops == self.number_of_stops:
+                return {'path': path, 'continue': True}
 
 
-def find_path_maximum_stops(from_node, to_node, max_stops, path=None):
-    amount_paths = []
+class SolverPathByMaxStops(SolverPath):
 
-    for edge in from_node.edges:
-        if not path:
-            path = Path(from_node)
+    def __init__(self, max_stops):
+        self.max_stops = max_stops
 
-        _path = Path(
-            edge.to_node,
-            parent=path,
-            distance=path.distance+edge.weight if path else edge.weight,
-            stops=path.stops+1 if path else 1)
-
-        if edge.to_node.id == to_node.id:
-            if _path.stops <= max_stops:
-                amount_paths.append(_path)
-            continue
-
-        amount_paths.extend(find_path_maximum_stops(edge.to_node, to_node, max_stops, path=_path))
-
-    return amount_paths
+    def _check(self, path, to_node):
+        if path.node.id == to_node.id:
+            if path.stops <= self.max_stops:
+                return {'path': path, 'continue': True}
+            return {'continue': True}
 
 
-def find_path_less_than_distance(from_node, to_node, max_distance, path=None):
-    amount_paths = []
+class SolverPathByDistance(SolverPath):
 
-    for edge in from_node.edges:
-        if not path:
-            path = Path(from_node)
+    def __init__(self, max_distance):
+        self.max_distance = max_distance
 
-        _path = Path(edge.to_node, parent=path, distance=path.distance+edge.weight, stops=path.stops+1)
+    def _check(self, path, to_node):
+        if path.get_distance() > self.max_distance:
+            return {'continue': True}
 
-        if _path.distance > max_distance:
-            continue 
-
-        if edge.to_node.id == to_node.id:
-            if _path.distance < max_distance:
-                amount_paths.append(_path)
-
-        amount_paths.extend(find_path_less_than_distance(edge.to_node, to_node, max_distance, path=_path))
-
-    return amount_paths
+        if path.node.id == to_node.id:
+            if path.get_distance() < self.max_distance:
+                return {'path': path, 'continue': False}
