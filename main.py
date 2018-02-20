@@ -43,7 +43,6 @@ if __name__ == '__main__':
 
     graph = None
     args = parser.parse_args()
-    print(args.edges)
     if args.edges:
         edges = [edge.replace(',', '').strip() for edge in args.edges]
         creator = CreateGraph()
