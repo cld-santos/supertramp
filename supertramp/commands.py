@@ -85,11 +85,10 @@ class ShortestPath(Command):
         paths = solve_all_paths.solve_path_between(self.graph[path[0]], self.graph[path[1]])
         shortest_path = paths[0]
         for path in paths:
-            print(path.get_path())
-            if path.distance < shortest_path.distance:
+            if path.get_distance() < shortest_path.get_distance():
                 shortest_path = path
 
-        return shortest_path.distance
+        return shortest_path.get_distance()
 
 
 class CommandWithWeight(Command):

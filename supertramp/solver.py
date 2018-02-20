@@ -1,18 +1,44 @@
 from copy import deepcopy 
 
+
 class Path():
     def __init__(self, node, parent=None, distance=0, stops=0):
         self.node = node
         self.parent = parent
         self.distance = distance
         self.stops = stops
+        self.next = None
 
     def get_path(self):
-        path = [self.node.id]
+        path = ['N:{0}, D:{1}'.format(self.node.id, self.distance)]
         if self.parent:
             path.extend(self.parent.get_path())
 
         return path
+
+    def go_down(self):
+        path = [self.node.id]
+        if self.next:
+            path.extend(self.next.go_down())
+
+        return path
+
+    def update_next(self):
+        if self.parent:
+            self.parent.next = self
+            self.parent.update_next()
+
+    def get_leaf(self):
+        if self.next:
+            return self.next.get_leaf()
+        else:
+            return self
+
+    def get_distance(self):
+        total_distance = self.distance 
+        if self.parent:
+            total_distance += self.parent.get_distance()
+        return total_distance
 
 
 class Edge():
@@ -62,7 +88,7 @@ class SolverPath():
             _path = Path(
                 edge.to_node,
                 parent=path,
-                distance=path.distance+edge.weight if path else edge.weight,
+                distance=edge.weight,
                 stops=path.stops+1 if path else 1)
 
             checked_path = self._check(_path, to_node)
@@ -86,11 +112,13 @@ class SolveAllPaths(SolverPath):
         key = '{0}-{1}'.format(path.parent.node.id, path.node.id)
         checked_path = None
         if self.visited.get(key, None):
-            checked_path = deepcopy(self.visited[key])
+            checked_path = deepcopy(self.visited[key].next if self.visited[key].next else self.visited[key])
             checked_path.parent = path
+            return checked_path.get_leaf()
         self.visited[key] = path
 
         if path.node.id == to_node.id:
+            path.update_next()
             checked_path = path
 
         return checked_path
