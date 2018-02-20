@@ -2,9 +2,6 @@ import re
 from .solver import (
     Node,
     SolveAllPaths,
-    find_path,
-    find_paths,
-    find_all_paths,
     find_path_exactly_stops,
     find_path_maximum_stops,
     find_path_less_than_distance,
@@ -88,6 +85,7 @@ class ShortestPath(Command):
         paths = solve_all_paths.solve_path_between(self.graph[path[0]], self.graph[path[1]])
         shortest_path = paths[0]
         for path in paths:
+            print(path.get_path())
             if path.distance < shortest_path.distance:
                 shortest_path = path
 

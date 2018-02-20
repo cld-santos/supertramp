@@ -74,7 +74,7 @@ def test_solve_shortest_path():
     command = CreateGraph()
     graph = command.run('AB5 BC4 CD8 DC8 DE6 AD5 CE2 EB3 AE7')
     command = ShortestPath(graph)
-    result = command.run('shortest path A-C')
+    result = command.run('shortest path B-B')
     assert result == 9
 
 

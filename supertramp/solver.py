@@ -70,7 +70,7 @@ class SolverPath():
                 amount_paths.append(checked_path)
                 continue 
 
-            amount_paths.extend(find_all_paths(edge.to_node, to_node, path=_path))
+            amount_paths.extend(self.solve_path_between(edge.to_node, to_node, path=_path))
 
         return amount_paths
 
